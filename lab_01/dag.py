@@ -1,17 +1,14 @@
 from datetime import datetime
-from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
+import elasticsearch
+import csv
+import unicodedata
+from urllib.parse import urlparse
 
-def print_hello():
-    return 'Hello world!'
 
-dag = DAG('hello_world', description='Simple tutorial DAG',
-          schedule_interval='0 12 * * *',
-          start_date=datetime(2017, 3, 20), catchup=False)
+def pull_from_elasticsearch():
+    es = elasticsearch.Elasticsearch(["34.76.45.249:9200"])
+    res = es.search(index="ilya.kobelev", body={"query": {"match_all": {}}})
+    sample = res['hits']['hits']
 
-dummy_operator = DummyOperator(task_id='dummy_task', retries=3, dag=dag)
 
-hello_operator = PythonOperator(task_id='hello_task', python_callable=print_hello, dag=dag)
-
-dummy_operator >> hello_operator
+pull_from_elasticsearch()
