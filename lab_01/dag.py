@@ -62,6 +62,9 @@ def dag_task(ds, **kwargs):
         #copy merged file to HDFS
         subprocess.check_call("hdfs dfs -copyFromLocal -f {0}/{1} /opt/project".format(local_file_dir,merged_file_name), shell=True)
 
+        #import merged file into Click House
+        subprocess.check_call('cat {0}/{1} | clickhouse-client --query="INSERT INTO default.ilya_kobelev FORMAT CSV"'.format(local_file_dir,merged_file_name), shell=True)
+
 
 
 dag = DAG('lab1_dag',
@@ -72,7 +75,3 @@ dag_operator = PythonOperator(
     task_id='load_from_es_to_hdfs_and_clickhouse', python_callable=dag_task, provide_context=True, dag=dag)
 dag_operator
 
-'''
-extract_data_from_es(datetime(2019, 3, 13), datetime(
-    2019, 3, 15), 'D:\\Temp\\Lab01\\es.csv')
-'''
